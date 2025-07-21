@@ -533,10 +533,4 @@ awk -i inplace '!/BOARD_AVB_ENABLE := false/' device/*/*/*.mk; #revert Lineage's
 #END OF DEVICE CHANGES
 #
 
-#convert missing blueprints (requires androidmk, which gets build by mka blueprint_tools)
-if enterAndClear "system/qcom/softap/sdk"; then
-if [ -f Android.mk ]; then androidmk Android.mk > Android.bp && rm Android.mk; fi
-MSG="AXP.OS patching" commitChanges
-fi
-
 echo -e "\e[0;32m[SCRIPT COMPLETE] Primary patching finished\e[0m";
