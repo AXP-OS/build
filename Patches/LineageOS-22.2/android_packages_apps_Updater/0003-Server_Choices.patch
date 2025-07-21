@@ -6,8 +6,19 @@ Subject: [PATCH] Add server choices
 Change-Id: I43524f0567eabff163ce81c4a93cf145542a3d5d
 Signed-off-by: Tavi <tavi@divested.dev>
 ---
+ app/src/main/AndroidManifest.xml              |  3 +-
+ .../lineageos/updater/UpdatesActivity.java    |  4 +++
+ .../org/lineageos/updater/misc/Constants.java | 11 ++++++++
+ .../org/lineageos/updater/misc/Utils.java     | 28 +++++++++++++++----
+ .../main/res/layout/preferences_dialog.xml    | 22 +++++++++++++++
+ app/src/main/res/values/arrays.xml            |  7 +++++
+ app/src/main/res/values/strings.xml           |  5 ++++
+ .../main/res/xml/network_security_config.xml  |  8 ++++++
+ 8 files changed, 82 insertions(+), 6 deletions(-)
+ create mode 100644 app/src/main/res/xml/network_security_config.xml
 
 diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 40ab874..d745096 100644
 --- a/app/src/main/AndroidManifest.xml
 +++ b/app/src/main/AndroidManifest.xml
 @@ -25,7 +25,8 @@
@@ -21,6 +32,7 @@ diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
          <activity
              android:name=".UpdatesActivity"
 diff --git a/app/src/main/java/org/lineageos/updater/UpdatesActivity.java b/app/src/main/java/org/lineageos/updater/UpdatesActivity.java
+index ce00794..b01b95a 100644
 --- a/app/src/main/java/org/lineageos/updater/UpdatesActivity.java
 +++ b/app/src/main/java/org/lineageos/updater/UpdatesActivity.java
 @@ -594,6 +594,7 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
@@ -49,6 +61,7 @@ diff --git a/app/src/main/java/org/lineageos/updater/UpdatesActivity.java b/app/
                                      onionRouting.isChecked() && Utils.isOrbotInstalled(getApplicationContext()))
                              .putBoolean(Constants.PREF_AUTO_DELETE_UPDATES, autoDelete.isChecked())
 diff --git a/app/src/main/java/org/lineageos/updater/misc/Constants.java b/app/src/main/java/org/lineageos/updater/misc/Constants.java
+index 9b3f98a..fa74142 100644
 --- a/app/src/main/java/org/lineageos/updater/misc/Constants.java
 +++ b/app/src/main/java/org/lineageos/updater/misc/Constants.java
 @@ -28,8 +28,19 @@ public final class Constants {
@@ -72,6 +85,7 @@ diff --git a/app/src/main/java/org/lineageos/updater/misc/Constants.java b/app/s
      public static final String PREF_AUTO_DELETE_UPDATES = "auto_delete_updates";
      public static final String PREF_AB_PERF_MODE = "ab_perf_mode";
 diff --git a/app/src/main/java/org/lineageos/updater/misc/Utils.java b/app/src/main/java/org/lineageos/updater/misc/Utils.java
+index 90156fe..d7ec298 100644
 --- a/app/src/main/java/org/lineageos/updater/misc/Utils.java
 +++ b/app/src/main/java/org/lineageos/updater/misc/Utils.java
 @@ -222,16 +222,34 @@ public class Utils {
@@ -115,6 +129,7 @@ diff --git a/app/src/main/java/org/lineageos/updater/misc/Utils.java b/app/src/m
          return server + "/axp/api/v1/" + device + "/" + type + "/" + incrementalVersion;
      }
 diff --git a/app/src/main/res/layout/preferences_dialog.xml b/app/src/main/res/layout/preferences_dialog.xml
+index 93f1bfc..8e020f7 100644
 --- a/app/src/main/res/layout/preferences_dialog.xml
 +++ b/app/src/main/res/layout/preferences_dialog.xml
 @@ -29,6 +29,28 @@
@@ -147,6 +162,7 @@ diff --git a/app/src/main/res/layout/preferences_dialog.xml b/app/src/main/res/l
          android:id="@+id/preferences_onion_routing"
          android:layout_width="match_parent"
 diff --git a/app/src/main/res/values/arrays.xml b/app/src/main/res/values/arrays.xml
+index 287c221..777c8ef 100644
 --- a/app/src/main/res/values/arrays.xml
 +++ b/app/src/main/res/values/arrays.xml
 @@ -21,4 +21,11 @@
@@ -162,6 +178,7 @@ diff --git a/app/src/main/res/values/arrays.xml b/app/src/main/res/values/arrays
 +    </string-array>
  </resources>
 diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index bdf80b7..88b4a3e 100644
 --- a/app/src/main/res/values/strings.xml
 +++ b/app/src/main/res/values/strings.xml
 @@ -79,6 +79,11 @@
@@ -178,6 +195,7 @@ diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strin
      <string name="menu_delete_update">Delete</string>
 diff --git a/app/src/main/res/xml/network_security_config.xml b/app/src/main/res/xml/network_security_config.xml
 new file mode 100644
+index 0000000..09b655b
 --- /dev/null
 +++ b/app/src/main/res/xml/network_security_config.xml
 @@ -0,0 +1,8 @@
