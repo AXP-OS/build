@@ -805,7 +805,7 @@ export -f deblobKernel;
 
 deblobVendors() {
 	cd "$DOS_BUILD_BASE";
-	find vendor -regextype posix-extended -regex '.*('$blobs')' -type f -delete; #Delete all blobs
+	find vendor -regextype posix-extended -regex '.*('$blobs')' -type f -delete #Delete all blobs
 }
 export -f deblobVendors;
 
@@ -816,29 +816,63 @@ deblobVendorMk() {
 }
 export -f deblobVendorMk;
 
-deblobVendorBp() {
-	local bpfile="$1";
-	cd "$DOS_BUILD_BASE";
-	#TODO: remove these lines instead
-	sed -i -E "s/apk.*("$blobs").*/apk: \"proprietary\/priv-app\/qcrilmsgtunnel\/qcrilmsgtunnel.apk\", enabled: false,/g" "$bpfile";
-	sed -i -E "s/jars.*("$blobs").*/jars: \[\"proprietary\/system\/framework\/qcrilhook.jar\"\], enabled: false,/g" "$bpfile";
-	sed -i -E "s/srcs.*("$blobs").*/srcs: \[\"proprietary\/vendor\/lib\/libtime_genoff.so\"\], enabled: false,/g" "$bpfile";
-	#TODO make this work for more then these two blobs
-	#Credit: https://stackoverflow.com/a/26053127
-  	if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
-		sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm@1.*-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
-		sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
- 	fi;
-	sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.confirmationui@1.0-service-google.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
-	sed -i ':a;N;s/\n/&/3;Ta;/manifest_vendor.xiaomi.hardware.mlipay.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
-	sed -i ':a;N;s/\n/&/3;Ta;/vendor.qti.hardware.radio.atcmdfwd@1.0.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
-	sed -i ':a;N;s/\n/&/3;Ta;/com.google.android.widevine-.*.apex/!{P;D};:b;N;s/\n/&/6;Tb;d' "$bpfile";
-	if [ "$DOS_DEBLOBBER_REMOVE_FACE" = true ]; then
-		sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.biometrics.face-service.22.pixel.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
-		sed -i ':a;N;s/\n/&/3;Ta;/manifest_face.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
-	fi;
+deblobVendorBpHelper() {
+        # change IFS
+	IFS='|' read -r -a patterns <<< "$blobs"
+
+        awk_patterns=$(printf "%s\n" "${patterns[@]}" | tr '\n' '|')
+        awk_patterns=${awk_patterns%|}  # Remove trailing pipe
+        extrablobs="qcrilmsgtunnel.apk|qcrilhook.jar|libtime_genoff.so"
+
+        blockstart=$(grep -E '^\w+.*{' "$bpfile" | cut -d ' ' -f 1 | grep -vE "soong_namespace" | sort -u | tr '\n' ' ')
+
+        # set "enabled: false" for any removed blob
+        # (will avoid re-add on second run)
+
+        for m in $(echo "$blobs|$extrablobs" |tr '|' ' ');do
+            for block in $blockstart; do
+                awk -v regex="$m" '
+                    /^'$block' {/{print; in_block=1; found=0; next} 
+                    in_block && ($0 ~ regex) {found=1} 
+                    in_block && /^\}/ {  # If we hit a closing brace
+                        if(found && !/enabled: false,/) {  
+                            print "    //disabled due to Scripts/Common/Deblob.sh regex: >'$m'<"
+                            print "    enabled: false,"  # Insert just before the closing brace
+                        }
+                        print;  # Print the closing brace
+                        in_block=0  # End the block processing
+                        next;  # Skip to next line
+                    }
+                    {print}  # Print every line outside the block
+                ' "$bpfile" > "${bpfile}.tmp" && mv "${bpfile}.tmp" "$bpfile"
+            done
+        done
+
+        # Reset IFS back to default
+        IFS=$' \t\n'
 }
-export -f deblobVendorBp;
+export -f deblobVendorBpHelper
+
+deblobVendorBp() {
+	local bpfile="$1"
+	cd "$DOS_BUILD_BASE"
+        echo -e "\t|- $bpfile"
+        deblobVendorBpHelper
+        #Credit: https://stackoverflow.com/a/26053127
+        if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
+            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm@1.*-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+        fi;
+        sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.confirmationui@1.0-service-google.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+        sed -i ':a;N;s/\n/&/3;Ta;/manifest_vendor.xiaomi.hardware.mlipay.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+        sed -i ':a;N;s/\n/&/3;Ta;/vendor.qti.hardware.radio.atcmdfwd@1.0.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+        sed -i ':a;N;s/\n/&/3;Ta;/com.google.android.widevine-.*.apex/!{P;D};:b;N;s/\n/&/6;Tb;d' "$bpfile" 2>/dev/null
+        if [ "$DOS_DEBLOBBER_REMOVE_FACE" = true ]; then
+            sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.biometrics.face-service.22.pixel.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+            sed -i ':a;N;s/\n/&/3;Ta;/manifest_face.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+        fi
+}
+export -f deblobVendorBp
 #
 #END OF FUNCTIONS
 #
@@ -848,12 +882,14 @@ export -f deblobVendorBp;
 #START OF DEBLOBBING
 #
 cd "$DOS_BUILD_BASE";
-find build -name "*.mk" -type f -print0 | xargs -0 -n 1 -P 8 -I {} bash -c 'awk -i inplace "!/$makes/" "{}"'; #Deblob all makefiles
+#find kernel -maxdepth 2 -mindepth 2 -type d -print0 | xargs -0 -P 8 -I {} bash -c 'deblobKernel "{}"'; #Deblob all kernel directories
+find build -name "*.mk" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'awk -i inplace "!/$makes/" "{}"'; #Deblob all makefiles
 find device -maxdepth 2 -mindepth 2 -type d -exec bash -c 'deblobDevice "$0"' {} \;; #Deblob all device directories
-find device -name "*.mk" -type f -print0 | xargs -0 -n 1 -P 8 -I {} bash -c 'awk -i inplace "!/$makes/" "{}"'; #Deblob all makefiles
-#find kernel -maxdepth 2 -mindepth 2 -type d -print0 | xargs -0 -n 1 -P 8 -I {} bash -c 'deblobKernel "{}"'; #Deblob all kernel directories
-find vendor -name "*endor*.mk" -type f -print0 | xargs -0 -n 1 -P 8 -I {} bash -c 'deblobVendorMk "{}"'; #Deblob all makefiles
-find vendor -name "Android.bp" -type f -print0 | xargs -0 -n 1 -P 8 -I {} bash -c 'deblobVendorBp "{}"'; #Deblob all makefiles
+find device -name "*.mk" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'awk -i inplace "!/$makes/" "{}"'; #Deblob all makefiles
+
+find vendor -name "*endor*.mk" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'deblobVendorMk "{}"' #Deblob all makefiles
+find vendor -name "Android.bp" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'deblobVendorBp "{}"' #Deblob all makefiles
+
 if [ "$DOS_VERSION" != "LineageOS-14.1" ]; then
 perl -0777 -pe 's,(<hal.*?>.*?</hal>),$1 =~ /'$manifests'/?"":$1,gse' -i $(grep 'format="hidl"' "$DOS_BUILD_BASE/device" -ril); #Deblob all matrixes #Credit: https://unix.stackexchange.com/a/72160
 perl -0777 -pe 's,(<hal.*?>.*?</hal>),$1 =~ /'$manifests'/?"":$1,gse' -i $(grep 'format="hidl"' "$DOS_BUILD_BASE/hardware/interfaces" -ril);
