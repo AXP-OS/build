@@ -930,7 +930,7 @@ echo "   |- [DEBLOB: Blueprints (vendor)]"
 find $vendor_projects -name "Android.bp" -type f -print0 | xargs -0 -P $(( 1 + $DOS_MAX_THREADS_BUILD / 3)) -I {} bash -c 'deblobVendorBp "{}"'
 # commit changes (must run serialized to avoid run conflicts)
 for vend in $vendor_projects; do
-    printf "\r\t|--- committing... %-80s" "$vend" > /dev/tty
+    if [ -e /dev/tty ];then printf "\r\t|--- committing... %-80s" "$vend" > /dev/tty; fi
     commitDeblob "$vend" "deblobVendorBp"
 done
 
@@ -938,7 +938,7 @@ echo -e "\n   |- [DEBLOB: Makefiles (vendor)]"
 find vendor -name "*endor*.mk" -type f -print0 | xargs -0 -P $(( 1 + $DOS_MAX_THREADS_BUILD / 3)) -I {} bash -c 'deblobVendorMk "{}"' #Deblob all makefiles
 # commit changes (must run serialized to avoid run conflicts)
 for vend in $vendor_projects; do
-    printf "\r\t|--- committing... %-80s" "$vend" > /dev/tty
+    if [ -e /dev/tty ];then printf "\r\t|--- committing... %-80s" "$vend" > /dev/tty ;fi
     commitDeblob "$vend" "deblobVendorMk"
 done
 
