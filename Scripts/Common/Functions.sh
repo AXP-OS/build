@@ -17,7 +17,7 @@
 #along with this program.  If not, see <https://www.gnu.org/licenses/>.
 umask 0022;
 
-export MSG=
+export MSG= FORCE_GIT_AUTHOR= FORCE_GIT_MAIL= silentcommit=
 
 _fetchError(){
     local last_status="$1";
@@ -51,7 +51,7 @@ export -f startPatcher;
 resetWorkspace() {
 	umask 0022;
 	if [ "$1" == "local" ]; then local noNetwork="--local-only"; fi;
-	repo forall -j${DOS_MAX_THREADS_BUILD} -c 'git add -A && git reset --hard' && rm -rf out DOS_PATCHED_FLAG && repo sync --jobs-network=${DOS_MAX_THREADS_REPO} --jobs-checkout=${DOS_MAX_THREADS_BUILD} --force-sync --detach $noNetwork
+	repo forall -j${DOS_MAX_THREADS_BUILD} -c 'git add -A && git stash save -qua resetWorkspace && git reset --hard FETCH_HEAD' && rm -rf out DOS_PATCHED_FLAG && repo sync --use-superproject --jobs-network=${DOS_MAX_THREADS_REPO} --jobs-checkout=${DOS_MAX_THREADS_BUILD} --force-sync --detach $noNetwork || (echo "FATAL: sync failed!"; exit 3)
 	repo forall -v -c 'echo "$REPO_PATH $(git rev-parse HEAD)"' | sort -u > "$DOS_WORKSPACE_ROOT/Logs/resetWorkspace-$DOS_VERSION.txt"
 }
 export -f resetWorkspace;
@@ -96,17 +96,33 @@ export -f gitReset;
 
 commitChanges(){
       if [ -z "$MSG" ];then
-        MSG="DivestOS script adjustments"
+        MSG="DivestOS scripted adjustments"
       fi
       # add unstaged changes
       CMT=0
       git add -A || CMT=1
       # check for uncommitted changes
-      CMTL=$(git status --porcelain=v1 | wc -l 2>/dev/null)
+      CMTL=$(git status --porcelain=v1 2>/dev/null | wc -l)
       # commit if any of the above require it
       if [ $CMT -eq 1 -o $CMTL -gt 0 ];then
-          echo "Adding commit: $MSG"
-          git commit --author="${DOS_GIT_AUTHOR} <${DOS_GIT_MAIL}>" -m "$MSG"
+          if [ ! -z $DOS_GPG_SIGNING_KEY ];then
+            local GITCM="git commit -s"
+          else
+            local GITCM="git commit"
+          fi
+          if [ ! -z "$FORCE_GIT_AUTHOR" ] && [ ! -z "$FORCE_GIT_MAIL" ] ;then
+            local gitauthor="$FORCE_GIT_AUTHOR"
+            local gitmail="$FORCE_GIT_MAIL"
+          else
+            local gitauthor="${DOS_GIT_AUTHOR}"
+            local gitmail="${DOS_GIT_MAIL}"
+          fi
+          if [ "$silentcommit" == 1 ];then
+            $GITCM --author="${gitauthor} <${gitmail}>" -m "$MSG" >> LOG 2>&1
+          else
+            echo "Adding commit: $MSG"
+            $GITCM --author="${gitauthor} <${gitmail}>" -m "$MSG"
+          fi
       fi
 }
 export -f commitChanges

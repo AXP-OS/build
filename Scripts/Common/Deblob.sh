@@ -23,11 +23,13 @@ source "$DOS_SCRIPTS_COMMON/Shell.sh";
 #Outcome: Increased battery/performance/privacy/security, Decreased ROM size
 #TODO: Clean init*.rc files, Modularize, Remove more variants
 
-echo "Deblobbing...";
+echo "================================================================================================"
+echo -e "\e[0;32m[DEBLOBBING]\e[0m"
 
 #
 #START OF BLOBS ARRAY
 #
+        echo "   |- [DEBLOB: Building array]"
 	#WARNING: STRAY DELIMITERS WILL RESULT IN FILE DELETIONS
 	blobs=""; #Delimited using "|"
 	makes="";
@@ -677,6 +679,7 @@ echo "Deblobbing...";
 #
 deblobDevice() {
 	local devicePath="$1";
+        echo -e "\t|- $devicePath"
 	cd "$DOS_BUILD_BASE/$devicePath";
 	if [ -f Android.mk ]; then
 		#Some devices store these in a dedicated firmware partition, others in /system/vendor/firmware, either way the following are just symlinks
@@ -817,35 +820,49 @@ deblobVendorMk() {
 export -f deblobVendorMk;
 
 deblobVendorBpHelper() {
+        local extrablobs="qcrilmsgtunnel.apk|qcrilhook.jar" #|libtime_genoff.so"
+        local back=$PWD
+        cd "${bpfile/Android.bp/}"
+        local removedblobs=$(for i in $(git status |grep deleted: | tr -d ' ' |cut -d ':' -f2);do echo ${i/*\/};done | tr '\n' '|')
+        cd $back
+        local blobsBp="${blobs} ${removedblobs} ${extrablobs}"
+
         # change IFS
-	IFS='|' read -r -a patterns <<< "$blobs"
+	IFS='|' read -r -a patterns <<< "$blobsBp"
 
         awk_patterns=$(printf "%s\n" "${patterns[@]}" | tr '\n' '|')
         awk_patterns=${awk_patterns%|}  # Remove trailing pipe
-        extrablobs="qcrilmsgtunnel.apk|qcrilhook.jar|libtime_genoff.so"
 
-        blockstart=$(grep -E '^\w+.*{' "$bpfile" | cut -d ' ' -f 1 | grep -vE "soong_namespace" | sort -u | tr '\n' ' ')
+        # find valid blocks
+        skipblocks="hidl_interface|soong_namespace|hidl_package_root"   # allowing hidl_* breaks building e.g. fstman. "enabled: false" not avail?
+                                                                        # (-hidl-lint target was not configured correctly)
+        blockstart=$(grep -E '^\w+.*{' "$bpfile" | cut -d ' ' -f 1 | grep -vE "$skipblocks" | sort -u | tr '\n' ' ')
+
+        [ ! -z "$removedblobs" ] && echo -e "\t   also parsing for uncommitted file removals: $removedblobs"
 
         # set "enabled: false" for any removed blob
         # (will avoid re-add on second run)
-
-        for m in $(echo "$blobs|$extrablobs" |tr '|' ' ');do
+        for m in $(echo "$blobsBp" | tr '|' ' '); do
+#            printf "\r\t|--- parsing %-80s" "$m" > /dev/tty # as we use XARGS this would be just confusing
             for block in $blockstart; do
                 awk -v regex="$m" '
-                    /^'$block' {/{print; in_block=1; found=0; next} 
-                    in_block && ($0 ~ regex) {found=1} 
-                    in_block && /^\}/ {  # If we hit a closing brace
-                        if(found && !/enabled: false,/) {  
-                            print "    //disabled due to Scripts/Common/Deblob.sh regex: >'$m'<"
-                            print "    enabled: false,"  # Insert just before the closing brace
+                    /^'$block' {/{print; in_block=1; found=0; enabled_present=0; next}
+                    in_block && /^}/ {  # Check for end of block 
+                        if(found && !enabled_present) {     # Only add if enabled: false is not present
+                           print "    //disabled due to Scripts/Common/Deblob.sh regex: >'$m'< (other search patterns may apply, too)"
+                           print "    enabled: false,";       # Insert once before closing brace
                         }
-                        print;  # Print the closing brace
-                        in_block=0  # End the block processing
-                        next;  # Skip to next line
+                        print;                              # Print the closing brace
+                        in_block=0;                         # End block processing
+                       next;                               # Skip to the next line
                     }
-                    {print}  # Print every line outside the block
+                    in_block && ($0 ~ /disabled due to Scripts/) {
+                       enabled_present=1;
+                    }
+                   in_block && ($0 ~ regex) {found=1}       # Check if the current line matches the regex
+                   {print}                                    # Print every line outside the block
                 ' "$bpfile" > "${bpfile}.tmp" && mv "${bpfile}.tmp" "$bpfile"
-            done
+           done
         done
 
         # Reset IFS back to default
@@ -860,19 +877,28 @@ deblobVendorBp() {
         deblobVendorBpHelper
         #Credit: https://stackoverflow.com/a/26053127
         if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
-            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm@1.*-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
-            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm@1.*-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
         fi;
-        sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.confirmationui@1.0-service-google.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
-        sed -i ':a;N;s/\n/&/3;Ta;/manifest_vendor.xiaomi.hardware.mlipay.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
-        sed -i ':a;N;s/\n/&/3;Ta;/vendor.qti.hardware.radio.atcmdfwd@1.0.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
-        sed -i ':a;N;s/\n/&/3;Ta;/com.google.android.widevine-.*.apex/!{P;D};:b;N;s/\n/&/6;Tb;d' "$bpfile" 2>/dev/null
+        sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.confirmationui@1.0-service-google.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+        sed -i ':a;N;s/\n/&/3;Ta;/manifest_vendor.xiaomi.hardware.mlipay.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+        #sed -i ':a;N;s/\n/&/3;Ta;/vendor.qti.hardware.radio.atcmdfwd@1.0.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" # handled by deblobVendorBpHelper already
+        sed -i ':a;N;s/\n/&/3;Ta;/com.google.android.widevine-.*.apex/!{P;D};:b;N;s/\n/&/6;Tb;d' "$bpfile"
         if [ "$DOS_DEBLOBBER_REMOVE_FACE" = true ]; then
-            sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.biometrics.face-service.22.pixel.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
-            sed -i ':a;N;s/\n/&/3;Ta;/manifest_face.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" 2>/dev/null
+            sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.biometrics.face-service.22.pixel.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+            sed -i ':a;N;s/\n/&/3;Ta;/manifest_face.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
         fi
 }
 export -f deblobVendorBp
+
+commitDeblob() {
+    cd "$1"
+    silentcommit=1 MSG="deblobbing: $2" commitChanges
+    #MSG="deblobbing: $2" commitChanges
+    cd $DOS_BUILD_BASE
+}
+export -f commitDeblob
+
 #
 #END OF FUNCTIONS
 #
@@ -882,28 +908,57 @@ export -f deblobVendorBp
 #START OF DEBLOBBING
 #
 cd "$DOS_BUILD_BASE";
-#find kernel -maxdepth 2 -mindepth 2 -type d -print0 | xargs -0 -P 8 -I {} bash -c 'deblobKernel "{}"'; #Deblob all kernel directories
-find build -name "*.mk" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'awk -i inplace "!/$makes/" "{}"'; #Deblob all makefiles
-find device -maxdepth 2 -mindepth 2 -type d -exec bash -c 'deblobDevice "$0"' {} \;; #Deblob all device directories
-find device -name "*.mk" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'awk -i inplace "!/$makes/" "{}"'; #Deblob all makefiles
+deblobVendors # Deblob entire vendor directory
 
-find vendor -name "*endor*.mk" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'deblobVendorMk "{}"' #Deblob all makefiles
-find vendor -name "Android.bp" -type f -print0 | xargs -0 -P $DOS_MAX_THREADS_BUILD -I {} bash -c 'deblobVendorBp "{}"' #Deblob all makefiles
+projects=$(cat .repo/project.list)
+device_projects=$(echo "$projects" | grep ^device/ | tr '\n' ' ')
+vendor_projects=$(echo "$projects" | grep ^vendor/ | tr '\n' ' ')
+
+#find kernel -maxdepth 2 -mindepth 2 -type d -print0 | xargs -0 -P 8 -I {} bash -c 'deblobKernel "{}"'; #Deblob all kernel directories
+
+echo "   |- [DEBLOB: Makefiles (build,device)]"
+find build device -name "*.mk" -type f -print0 | xargs -0 -P $(( 1 + $DOS_MAX_THREADS_BUILD / 3)) -I {} bash -c 'awk -i inplace "!/$makes/" "{}"'; #Deblob all makefiles
+
+# Deblob all device directories
+echo "   |- [DEBLOB: device trees]"
+for dev in $device_projects; do
+    deblobDevice "$dev" && commitDeblob "$dev" "deblobDevice"
+done
+
+# deblob all blueprints
+echo "   |- [DEBLOB: Blueprints (vendor)]"
+find $vendor_projects -name "Android.bp" -type f -print0 | xargs -0 -P $(( 1 + $DOS_MAX_THREADS_BUILD / 3)) -I {} bash -c 'deblobVendorBp "{}"'
+# commit changes (must run serialized to avoid run conflicts)
+for vend in $vendor_projects; do
+    printf "\r\t|--- committing... %-80s" "$vend" > /dev/tty
+    commitDeblob "$vend" "deblobVendorBp"
+done
+
+echo -e "\n   |- [DEBLOB: Makefiles (vendor)]"
+find vendor -name "*endor*.mk" -type f -print0 | xargs -0 -P $(( 1 + $DOS_MAX_THREADS_BUILD / 3)) -I {} bash -c 'deblobVendorMk "{}"' #Deblob all makefiles
+# commit changes (must run serialized to avoid run conflicts)
+for vend in $vendor_projects; do
+    printf "\r\t|--- committing... %-80s" "$vend" > /dev/tty
+    commitDeblob "$vend" "deblobVendorMk"
+done
 
 if [ "$DOS_VERSION" != "LineageOS-14.1" ]; then
-perl -0777 -pe 's,(<hal.*?>.*?</hal>),$1 =~ /'$manifests'/?"":$1,gse' -i $(grep 'format="hidl"' "$DOS_BUILD_BASE/device" -ril); #Deblob all matrixes #Credit: https://unix.stackexchange.com/a/72160
-perl -0777 -pe 's,(<hal.*?>.*?</hal>),$1 =~ /'$manifests'/?"":$1,gse' -i $(grep 'format="hidl"' "$DOS_BUILD_BASE/hardware/interfaces" -ril);
+    echo -e "\n   |- [DEBLOB: Manifests (device, interfaces)]"
+    perl -0777 -pe 's,(<hal.*?>.*?</hal>),$1 =~ /'$manifests'/?"":$1,gse' -i $(grep 'format="hidl"' "$DOS_BUILD_BASE/device" -ril); #Deblob all matrixes #Credit: https://unix.stackexchange.com/a/72160
+    perl -0777 -pe 's,(<hal.*?>.*?</hal>),$1 =~ /'$manifests'/?"":$1,gse' -i $(grep 'format="hidl"' "$DOS_BUILD_BASE/hardware/interfaces" -ril);
 else
-echo "Skipping manifest deblobbing";
-fi;
-deblobVendors; #Deblob entire vendor directory
+    echo -e "\nSkipping manifest deblobbing"
+fi
+
 if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
+    echo "   |- [DEBLOB: Widevine]"
     rm -rf frameworks/av/drm/mediadrm/plugins/clearkey; #Remove ClearKey
     #rm -rf frameworks/av/drm/mediacas/plugins/clearkey; #XXX: breaks protobuf inclusion
 fi
 [[ -d vendor/samsung/nodevice ]] && rm -rf vendor/samsung/nodevice;
 
 #Remove proprietary libraries
+echo "   |- [DEBLOB: Proprietary libs (external, prebuilts, packages)]"
 rm -rf external/firebase-messaging/* || true;
 rm -rf prebuilts/tools/common/m2/repository/com/apple/AppleJavaExtensions || true;
 rm -rf prebuilts/tools/common/m2/repository/com/cenqua/clover/clover || true;
@@ -921,7 +976,8 @@ rm -rf packages/apps/ImsServiceEntitlement/* || true;
 #
 #END OF DEBLOBBING
 #
-
+echo "   |- [DEBLOB: END]"
 cd "$DOS_BUILD_BASE";
 
 echo -e "\e[0;32m[SCRIPT COMPLETE] Deblobbing complete\e[0m";
+echo "================================================================================================"
