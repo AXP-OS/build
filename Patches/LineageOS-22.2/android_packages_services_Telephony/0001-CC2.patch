@@ -6,23 +6,24 @@ Subject: [PATCH] Runtime control of platform carrier config package
 Change-Id: I8cc8f2bda264bd42fe83d5c96fa6382e63a88410
 Signed-off-by: Tavi <tavi@divested.dev>
 ---
- src/com/android/phone/CarrierConfigLoader.java | 6 ++++++
- 1 file changed, 6 insertions(+)
 
 diff --git a/src/com/android/phone/CarrierConfigLoader.java b/src/com/android/phone/CarrierConfigLoader.java
-index 1384f71ab..37ee43b39 100644
+index 1384f71ab..66ec88cf1 100644
 --- a/src/com/android/phone/CarrierConfigLoader.java
 +++ b/src/com/android/phone/CarrierConfigLoader.java
-@@ -710,6 +710,12 @@ public class CarrierConfigLoader extends ICarrierConfigLoader.Stub {
+@@ -710,8 +710,13 @@ public class CarrierConfigLoader extends ICarrierConfigLoader.Stub {
              @NonNull FeatureFlags featureFlags) {
          super(PermissionEnforcer.fromContext(context));
          mContext = context;
+-        mPlatformCarrierConfigPackage =
+-                mContext.getString(R.string.platform_carrier_config_package);
 +	if (SystemProperties.getBoolean("persist.security.carrierconfig2", false)) {
 +            mPlatformCarrierConfigPackage = "app.grapheneos.carrierconfig2";
 +        } else {
 +            mPlatformCarrierConfigPackage =
 +                    mContext.getString(R.string.platform_carrier_config_package);
 +        }
-         mPlatformCarrierConfigPackage =
-                 mContext.getString(R.string.platform_carrier_config_package);
++	 Log.d("CarrierConfigPackageOverride", "Provider: " + mPlatformCarrierConfigPackage);
          mHandler = new ConfigHandler(looper);
+ 
+         IntentFilter systemEventsFilter = new IntentFilter();
