@@ -85,10 +85,10 @@ index 9b3f98a..fa74142 100644
      public static final String PREF_AUTO_DELETE_UPDATES = "auto_delete_updates";
      public static final String PREF_AB_PERF_MODE = "ab_perf_mode";
 diff --git a/app/src/main/java/org/lineageos/updater/misc/Utils.java b/app/src/main/java/org/lineageos/updater/misc/Utils.java
-index 90156fe..d7ec298 100644
+index 90156fe..57e4c81 100644
 --- a/app/src/main/java/org/lineageos/updater/misc/Utils.java
 +++ b/app/src/main/java/org/lineageos/updater/misc/Utils.java
-@@ -222,16 +222,34 @@ public class Utils {
+@@ -222,16 +222,35 @@ public class Utils {
          return listening;
      }
  
@@ -122,9 +122,10 @@ index 90156fe..d7ec298 100644
 -        if(serverOnion.toLowerCase().startsWith("http") && isOnionRoutingEnabled(context)) {
 -            server = serverOnion;
 -        }
-+	String server = getServerBaseUrl(context);
++       String server = getServerBaseUrl(context);
 +        if (!isOnionRoutingEnabled(context) && server.toLowerCase().startsWith("http://") && server.toLowerCase().contains(".onion")) {
 +            server = Constants.PREF_SERVER_CHOICE_PRIMARY_ACTUAL;
++       }
  
          return server + "/axp/api/v1/" + device + "/" + type + "/" + incrementalVersion;
      }
