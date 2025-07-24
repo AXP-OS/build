@@ -8,8 +8,8 @@ LOCAL_AAPT_FLAGS += --auto-add-overlay
 DEVICE_PACKAGE_OVERLAYS += vendor/divested/overlay/common
 
 #Extra settings
-PRODUCT_BUILD_PROP_OVERRIDES += \
-    BUILD_UTC_DATE=0
+#PRODUCT_BUILD_PROP_OVERRIDES += \
+#    BUILD_UTC_DATE=0
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.config.notification_sound=Pong.ogg \
