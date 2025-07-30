@@ -874,20 +874,27 @@ deblobVendorBp() {
 	local bpfile="$1"
 	cd "$DOS_BUILD_BASE"
         echo -e "\t|- $bpfile"
-        deblobVendorBpHelper
-        #Credit: https://stackoverflow.com/a/26053127
-        if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
-            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm@1.*-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
-            sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
-        fi;
-        sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.confirmationui@1.0-service-google.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
-        sed -i ':a;N;s/\n/&/3;Ta;/manifest_vendor.xiaomi.hardware.mlipay.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
-        #sed -i ':a;N;s/\n/&/3;Ta;/vendor.qti.hardware.radio.atcmdfwd@1.0.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" # handled by deblobVendorBpHelper already
-        sed -i ':a;N;s/\n/&/3;Ta;/com.google.android.widevine-.*.apex/!{P;D};:b;N;s/\n/&/6;Tb;d' "$bpfile"
-        if [ "$DOS_DEBLOBBER_REMOVE_FACE" = true ]; then
-            sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.biometrics.face-service.22.pixel.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
-            sed -i ':a;N;s/\n/&/3;Ta;/manifest_face.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
-        fi
+	if [ "$AXP_ADVANCED_DEBLOB" == "true" ];then
+            deblobVendorBpHelper
+	else
+		sed -i -E "s/apk.*("$blobs").*/apk: \"proprietary\/priv-app\/qcrilmsgtunnel\/qcrilmsgtunnel.apk\", enabled: false,/g" "$bpfile";
+		sed -i -E "s/jars.*("$blobs").*/jars: \[\"proprietary\/system\/framework\/qcrilhook.jar\"\], enabled: false,/g" "$bpfile";
+		sed -i -E "s/srcs.*("$blobs").*/srcs: \[\"proprietary\/vendor\/lib\/libtime_genoff.so\"\], enabled: false,/g" "$bpfile";
+		sed -i ':a;N;s/\n/&/3;Ta;/vendor.qti.hardware.radio.atcmdfwd@1.0.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile";
+    fi
+	#Credit: https://stackoverflow.com/a/26053127
+	if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
+		sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm@1.*-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+		sed -i ':a;N;s/\n/&/3;Ta;/manifest_android.hardware.drm-service.widevine.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+	fi;
+	sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.confirmationui@1.0-service-google.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+	sed -i ':a;N;s/\n/&/3;Ta;/manifest_vendor.xiaomi.hardware.mlipay.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+	#sed -i ':a;N;s/\n/&/3;Ta;/vendor.qti.hardware.radio.atcmdfwd@1.0.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile" # handled by deblobVendorBpHelper already
+	sed -i ':a;N;s/\n/&/3;Ta;/com.google.android.widevine-.*.apex/!{P;D};:b;N;s/\n/&/6;Tb;d' "$bpfile"
+	if [ "$DOS_DEBLOBBER_REMOVE_FACE" = true ]; then
+		sed -i ':a;N;s/\n/&/3;Ta;/android.hardware.biometrics.face-service.22.pixel.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+		sed -i ':a;N;s/\n/&/3;Ta;/manifest_face.xml/!{P;D};:b;N;s/\n/&/8;Tb;d' "$bpfile"
+	fi
 }
 export -f deblobVendorBp
 
