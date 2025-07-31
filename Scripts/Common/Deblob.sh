@@ -961,6 +961,7 @@ if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
     echo "   |- [DEBLOB: Widevine]"
     rm -rf frameworks/av/drm/mediadrm/plugins/clearkey; #Remove ClearKey
     #rm -rf frameworks/av/drm/mediacas/plugins/clearkey; #XXX: breaks protobuf inclusion
+    find device vendor -name hal_drm_widevine.te -delete	# at least avail in device/google/gs201
 fi
 [[ -d vendor/samsung/nodevice ]] && rm -rf vendor/samsung/nodevice;
 
