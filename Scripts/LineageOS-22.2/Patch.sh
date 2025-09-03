@@ -441,7 +441,7 @@ MSG="DOS patching" commitChanges
 fi;
 
 if enterAndClear "device/google/gs101"; then
-git revert --no-edit adfcf46ec8c099e77cf58ec87d02bafc78a0d01e; #potential breakage
+#git revert --no-edit adfcf46ec8c099e77cf58ec87d02bafc78a0d01e; #potential breakage
 if [ "$DOS_DEBLOBBER_REMOVE_CNE" = true ]; then sed -i '/google iwlan/,+8d' device.mk; fi; #fix stray
 awk -i inplace '!/widevine.mk/' device.mk;
 MSG="DOS patching" commitChanges
