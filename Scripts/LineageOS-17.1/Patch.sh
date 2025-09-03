@@ -911,9 +911,9 @@ if enterAndClear "vendor/qcom/opensource/commonsys/system/bt"; then
 #APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/408534.patch"; #Q_asb_2024-10 Add privatize option for bluetooth addresses for logging
 #APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/408535.patch"; #Q_asb_2024-10 Add btif/include/btif_hh::btif_hh_status_text
 #APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/408536.patch"; #Q_asb_2024-10 Disallow unexpected incoming HID connections 1/2
-applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/411491.patch"; #R_asb_2024-12 Fix OOB write in build_read_multi_rsp of gatt_sr.cc
-applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/411492.patch"; #R_asb_2024-12 Fix an integer underflow in build_read_multi_rsp
-applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/411493.patch"; #R_asb_2024-12 Fix "GATT Read Multiple Variable Response" builder
+#APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/411491.patch"; #R_asb_2024-12 Fix OOB write in build_read_multi_rsp of gatt_sr.cc
+#APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/411492.patch"; #R_asb_2024-12 Fix an integer underflow in build_read_multi_rsp
+#APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_vendor_qcom_opensource_system_bt/411493.patch"; #R_asb_2024-12 Fix "GATT Read Multiple Variable Response" builder
 MSG="DOS patching" commitChanges
 fi;
 
