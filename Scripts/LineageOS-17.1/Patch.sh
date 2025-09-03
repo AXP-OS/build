@@ -764,9 +764,9 @@ if enterAndClear "system/bt"; then
 #APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_system_bt/408530.patch"; #Q_asb_2024-10 Add privatize option for bluetooth addresses for logging
 #APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_system_bt/408531.patch"; #Q_asb_2024-10 Add btif/include/btif_hh::btif_hh_status_text
 #APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_system_bt/408532.patch"; #Q_asb_2024-10 Disallow unexpected incoming HID connections 1/2
-applyPatch "$DOS_PATCHES/android_system_bt/411488.patch"; #R_asb_2024-12 Fix OOB write in build_read_multi_rsp of gatt_sr.cc
-applyPatch "$DOS_PATCHES/android_system_bt/411489.patch"; #R_asb_2024-12 Fix an integer underflow in build_read_multi_rsp
-applyPatch "$DOS_PATCHES/android_system_bt/411490.patch"; #R_asb_2024-12 Fix "GATT Read Multiple Variable Response" builder
+#APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_system_bt/411488.patch"; #R_asb_2024-12 Fix OOB write in build_read_multi_rsp of gatt_sr.cc
+#APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_system_bt/411489.patch"; #R_asb_2024-12 Fix an integer underflow in build_read_multi_rsp
+#APPLIED BY ANSIBLE: applyPatch "$DOS_PATCHES/android_system_bt/411490.patch"; #R_asb_2024-12 Fix "GATT Read Multiple Variable Response" builder
 applyPatch "$DOS_PATCHES_COMMON/android_system_bt/0001-alloc_size.patch"; #Add alloc_size attributes to the allocator (GrapheneOS)
 #applyPatch "$DOS_PATCHES/android_system_bt/272648.patch"; #ten-bt-sbc-hd-dualchannel: Increase maximum Bluetooth SBC codec bitrate for SBC HD (ValdikSS)
 #applyPatch "$DOS_PATCHES/android_system_bt/272649.patch"; #ten-bt-sbc-hd-dualchannel: Explicit SBC Dual Channel (SBC HD) support (ValdikSS)
