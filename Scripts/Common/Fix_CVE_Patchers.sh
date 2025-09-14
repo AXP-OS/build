@@ -698,7 +698,8 @@ commentPatches android_kernel_samsung_msm8974.sh \
     "CVE-2022-49545/ANY/0001.patch" \
     "CVE-2025-38034" \
     "CVE-2022-49980" \
-    "CVE-2022-49948"
+    "CVE-2022-49948" \
+    "CVE-2025-38219/ANY/0001.patch"
 
 commentPatches android_kernel_samsung_smdk4412.sh \
     "CVE-2012-2127" \
