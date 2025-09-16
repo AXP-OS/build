@@ -261,7 +261,9 @@ commentPatches android_kernel_google_gs201_private_gs-google.sh \
     "CVE-2025-38253/ANY/0001.patch" \
     "CVE-2025-38271/ANY/0001.patch" \
     "CVE-2025-38175/ANY/0001.patch" \
-    "CVE-2025-38099/ANY/0001.patch"
+    "CVE-2025-38099/ANY/0001.patch" \
+    "CVE-2024-50029/^6.12/0001.patch" \
+    "CVE-2025-38509/ANY/0001.patch"
 
 commentPatches android_kernel_google_marlin.sh \
     "0001-LinuxIncrementals/3.18/3.18.0098-0099.patch" \
