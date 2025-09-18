@@ -41,6 +41,23 @@ def parse_args():
     return p.parse_args()
 
 def get_default_log_path(bp_path: Path) -> Path:
+    """
+    Return a clean log file path under out/deblobbing/
+    for either a single .bp file or a directory.
+    """
+    # For directories, just use the directory name
+    if bp_path.is_dir():
+        safe = str(bp_path).strip("/").replace("/", "_").replace("\\", "_")
+        if safe.endswith("_"):
+            safe = safe[:-1]
+        return Path("out/deblobbing") / f"{safe}.log"
+
+    # For individual files
+    if bp_path.is_file():
+        safe = str(bp_path).strip("/").replace("/", "_").replace("\\", "_")
+        return Path("out/deblobbing") / f"{safe}.log"
+
+    # If path doesn't exist yet, just sanitize string
     safe = str(bp_path).strip("/").replace("/", "_").replace("\\", "_")
     return Path("out/deblobbing") / f"{safe}.log"
 
