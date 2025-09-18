@@ -944,6 +944,7 @@ if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
     #rm -rf frameworks/av/drm/mediacas/plugins/clearkey; #XXX: breaks protobuf inclusion
     find device vendor -type f -name hal_drm_widevine.te -delete
 	find device vendor -type f -name 'file_contexts' -exec sed -i -E 's/(.*)(hal_drm_widevine_exec)(.*)/#\1\2\3/g' {} \;
+    sed -i 's#device/google/gs201/widevine/device.mk##' device/google/gs201/device.mk
 fi
 [[ -d vendor/samsung/nodevice ]] && rm -rf vendor/samsung/nodevice;
 
