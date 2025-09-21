@@ -945,9 +945,9 @@ if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
 	find device vendor -type f -name hal_drm_widevine.te -delete
 	find device vendor -type f -name 'file_contexts' -exec sed -i -E 's/(.*)(hal_drm_widevine_exec)(.*)/#\1\2\3/g' {} \;
 fi
-
-# FIXME: device.mk gets removed (as widevine.mk) but on >=A15 the following is required. unsure if that breaks <A15 though:
-sed -i 's#include device/google/gs201/widevine/device.mk##' device/google/gs201/device.mk
+if [ ! -f device/google/gs201/widevine/device.mk ]; then
+    sed -i 's#include device/google/gs201/widevine/device.mk##' device/google/gs201/device.mk
+fi
 
 [[ -d vendor/samsung/nodevice ]] && rm -rf vendor/samsung/nodevice;
 
