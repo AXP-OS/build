@@ -330,7 +330,8 @@ commentPatches android_kernel_google_msm-4.14.sh \
     "CVE-2025-38253/ANY/0001.patch" \
     "CVE-2025-38099/ANY/0001.patch" \
     "CVE-2023-51043/4.19/0002.patch" \
-    "CVE-2021-46921/4.19/0002.patch"
+    "CVE-2021-46921/4.19/0002.patch" \
+    "CVE-2025-38677/ANY/0001.patch"
 
 commentPatches android_kernel_google_redbull.sh \
     "CVE-2018-5873" \
@@ -544,7 +545,8 @@ commentPatches android_kernel_oneplus_sdm845.sh \
     "CVE-2022-49545/ANY/0001.patch" \
     "CVE-2025-38034" \
     "CVE-2022-49980" \
-    "CVE-2025-38099/ANY/0001.patch"
+    "CVE-2025-38099/ANY/0001.patch" \
+    "CVE-2025-38677/ANY/0001.patch"
 
 commentPatches android_kernel_oneplus_sm7250.sh \
     "CVE-2018-5873" \
@@ -589,7 +591,8 @@ commentPatches android_kernel_oneplus_sm8150.sh \
     "CVE-2024-56692/ANY/0001.patch" \
     "CVE-2024-56692/ANY/0001.patch" \
     "CVE-2025-21629/ANY/0001.patch" \
-    "CVE-2024-42247/^6.10/0001.patch"
+    "CVE-2024-42247/^6.10/0001.patch" \
+    "CVE-2020-1749/4.14/0005.patch"
     
 commentPatches android_kernel_oneplus_sm8250.sh \
     "CVE-2018-5873" \
