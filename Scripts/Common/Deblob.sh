@@ -945,7 +945,7 @@ if [ "$DOS_DEBLOBBER_REMOVE_WIDEVINE_DRM" != "false" ]; then
 	find device vendor -type f -name hal_drm_widevine.te -delete
 	find device vendor -type f -name 'file_contexts' -exec sed -i -E 's/(.*)(hal_drm_widevine_exec)(.*)/#\1\2\3/g' {} \;
 fi
-if [ ! -f device/google/gs201/widevine/device.mk ]; then
+if [ ! -f device/google/gs201/widevine/device.mk ] && [ -f device/google/gs201/device.mk ]; then
     sed -i 's#include device/google/gs201/widevine/device.mk##' device/google/gs201/device.mk
 fi
 
