@@ -330,8 +330,7 @@ commentPatches android_kernel_google_msm-4.14.sh \
     "CVE-2025-38253/ANY/0001.patch" \
     "CVE-2025-38099/ANY/0001.patch" \
     "CVE-2023-51043/4.19/0002.patch" \
-    "CVE-2021-46921/4.19/0002.patch" \
-    "CVE-2025-38677/ANY/0001.patch"
+    "CVE-2021-46921/4.19/0002.patch"
 
 commentPatches android_kernel_google_redbull.sh \
     "CVE-2018-5873" \
@@ -545,8 +544,7 @@ commentPatches android_kernel_oneplus_sdm845.sh \
     "CVE-2022-49545/ANY/0001.patch" \
     "CVE-2025-38034" \
     "CVE-2022-49980" \
-    "CVE-2025-38099/ANY/0001.patch" \
-    "CVE-2025-38677/ANY/0001.patch"
+    "CVE-2025-38099/ANY/0001.patch"
 
 commentPatches android_kernel_oneplus_sm7250.sh \
     "CVE-2018-5873" \
@@ -1249,7 +1247,8 @@ do
         "CVE-2025-21954/ANY/0001.patch" \
         "CVE-2022-49980" \
         "CVE-2025-38034" \
-        "CVE-2025-38099/ANY/0001.patch"
+        "CVE-2025-38099/ANY/0001.patch" \
+        "CVE-2025-38677/ANY/0001.patch"
 done
 
 #4.14
@@ -1270,7 +1269,8 @@ do
         "CVE-2025-21765/ANY/0001.patch" \
         "CVE-2025-38034" \
         "CVE-2022-49980" \
-        "CVE-2025-38099/ANY/0001.patch"
+        "CVE-2025-38099/ANY/0001.patch" \
+        "CVE-2025-38677/ANY/0001.patch"
 done
 
 echo -e "\e[0;32m[SCRIPT COMPLETE] Fixed CVE patchers\e[0m"
