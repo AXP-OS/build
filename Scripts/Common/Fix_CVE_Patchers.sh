@@ -144,7 +144,7 @@ commentPatches android_kernel_fairphone_sm7225.sh \
     "CVE-2025-38034" \
     "CVE-2022-49980" \
     "CVE-2022-49988/ANY/0001.patch" \
-    "CVE-2025-38677/ANY/0001.patch" "CVE-2025-38099/ANY/0001.patch" 
+    "CVE-2025-38677/ANY/0001.patch" "CVE-2025-38099/ANY/0001.patch" "CVE-2025-38271/ANY/0001.patch"
 
 commentPatches android_kernel_fxtec_msm8998.sh \
     "0008-Graphene-Kernel_Hardening-slab" \
