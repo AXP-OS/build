@@ -231,11 +231,13 @@ sed -i 's/^\treturn VERITY_STATE_DISABLE;//' kernel/*/*/drivers/md/dm-android-ve
 # ro.boot.flash.locked=1 might be required also by SafetyNet / Play Integrity API which isn't supported by AXP.OS anyways though
 find device/ -type f -name '*.prop' -exec sed -i 's/ro.oem_unlock_supported=1/ro.oem_unlock_supported=0/g' {} \; || true
 find device/ -type f -name '*.mk' -exec sed -i 's/ro.oem_unlock_supported=1/ro.oem_unlock_supported=0/g' {} \; || true
-find device/ -type f -name '*.prop' -exec sed -i 's/sys.oem_unlock_allowed=1/sys.oem_unlock_allowed=0/g' {} \; || true
 find device/ -type f -name '*.prop' -exec sed -i 's/ro.boot.flash.locked=1/ro.boot.flash.locked=0/g' {} \; || true
 find device/ -type f -name '*.prop' -exec sed -zi '/ro.oem_unlock_supported=0/!s/$/\nro.oem_unlock_supported=0\n/' {} \; || true
-find device/ -type f -name '*.prop' -exec sed -zi '/sys.oem_unlock_allowed=0/!s/$/\nsys.oem_unlock_allowed=0\n/' {} \; || true
 find device/ -type f -name '*.prop' -exec sed -zi '/ro.boot.flash.locked=0/!s/$/\nro.boot.flash.locked=0\n/' {} \; || true
+
+# enforce to allow unlocking in any case
+find device/ -type f -name '*.prop' -exec sed -i 's/sys.oem_unlock_allowed=0/sys.oem_unlock_allowed=1/g' {} \; || true
+find device/ -type f -name '*.prop' -exec sed -zi '/sys.oem_unlock_allowed=0/!s/$/\nsys.oem_unlock_allowed=1\n/' {} \; || true
 
 cd "$DOS_BUILD_BASE";
 echo -e "\e[0;32m[SCRIPT COMPLETE] Verity enablement complete\e[0m";
