@@ -948,8 +948,8 @@ editKernelLocalversion() {
 export -f editKernelLocalversion;
 
 getDefconfig() {
-	if ls private/gs-google/arch/arm64/configs/*_gki_defconfig 1> /dev/null 2>&1; then
-		local defconfigPath="private/gs-google/arch/arm64/configs/cloudripper_gki_defconfig private/gs-google/arch/arm64/configs/slider_gki_defconfig";
+	if ls private/gs-google/arch/arm64/configs/*gki_defconfig 1> /dev/null 2>&1; then
+		local defconfigPath="private/gs-google/arch/arm64/configs/cloudripper_gki_defconfig private/gs-google/arch/arm64/configs/slider_gki_defconfig private/gs-google/arch/arm64/configs/gki_defconfig";
 	elif ls arch/arm64/configs/lineage*defconfig 1> /dev/null 2>&1; then
 		local defconfigPath="arch/arm64/configs/lineage*defconfig";
 	elif ls arch/arm/configs/lineage*defconfig 1> /dev/null 2>&1; then
