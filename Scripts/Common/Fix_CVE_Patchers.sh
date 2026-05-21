@@ -268,8 +268,18 @@ commentPatches android_kernel_google_gs201_private_gs-google.sh \
     "CVE-2024-53091" "CVE-2025-37834" "CVE-2025-37834" "CVE-2025-21854" \
     "CVE-2025-38670" "CVE-2025-38558" \
     "CVE-2025-38553/ANY/0001.patch" \
-    "0001-LinuxIncrementals/5.10/5.10.0166-0167.patch" "0003-syzkaller-Misc2"   # FIXME (git check fails here!)
-
+    "0001-LinuxIncrementals/5.10/5.10.0166-0167.patch" "0003-syzkaller-Misc2" \   # FIXME (git check fails here!)
+    "CVE-2026-23340/ANY/0001.patch" \
+    "CVE-2026-23417/ANY/0001.patch" \
+    "CVE-2026-23447/ANY/0001.patch" \
+    "CVE-2026-23448/ANY/0001.patch" \
+    "CVE-2026-23461/ANY/0001.patch" \
+    "CVE-2026-31516/ANY/0001.patch" \
+    "CVE-2026-31664/ANY/0001.patch" \
+    "CVE-2026-31579/ANY/0001.patch" \
+    "CVE-2026-31495/5.10/0002.patch" \
+    "CVE-2026-43134/5.10/0003.patch" 
+    
 commentPatches android_kernel_google_marlin.sh \
     "0001-LinuxIncrementals/3.18/3.18.0098-0099.patch" \
     "0006-AndroidHardening-Kernel_Hardening/3.18/0048.patch" \
